@@ -1,10 +1,12 @@
 import mechanicalsoup
 import sys 
+import re
 
 class WikiPage:
     def __init__(self, title):
         self.title = title
         self.sections = []
+        self.toc = None
 
     def getText(self):
         '''Print out the wiki page, formatted for console output.'''
@@ -16,6 +18,10 @@ class WikiPage:
         # Then, the description (sections[0]) is printed
         wikiPageText += '\n\n'
         wikiPageText += self.sections[0].getText()
+
+        # Then, table of contents
+        wikiPageText += '\n\n+ Table of Contents +\n'
+        wikiPageText += toc
         return wikiPageText
 
     def addSection(self, title, text):
@@ -56,6 +62,11 @@ page_description = page_description.get_text()
 wikipage.addSection('Description', page_description)
 
 # Get the table of contents
-toc = page.soup.select('div #toc')[0].get_text()
+toc = page.soup.select('div #toc ul')[0].get_text()
+toc_filtered = [line for line in toc.split('\n') if line.strip() != '']
+
+toc_filtered = [re.sub(r'\s', r'\t', line, count=1) for line in toc_filtered]
+toc = '\n'.join(toc_filtered)
+wikipage.toc = toc 
 
 print wikipage.getText()
